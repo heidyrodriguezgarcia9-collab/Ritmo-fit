@@ -6,9 +6,9 @@ const authStatus=document.getElementById('authStatus'),syncStatus=document.getEl
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);const googleProvider=new GoogleAuthProvider();setPersistence(auth,browserLocalPersistence).catch(e=>{syncStatus.textContent='⚠️ '+e.code});
 let user=null;
 const credentials=()=>[document.getElementById('authEmail').value.trim(),document.getElementById('authPassword').value];
-const error=e=>{syncStatus.textContent='⚠️ '+(e.code||e.message)+' · Comprueba Authentication y Firestore en Firebase.'};
+const error=e=>{syncStatus.textContent='⚠️ '+(e.code||e.message)+' · Si persiste, envíame una captura de este mensaje.'};
 window.ritmoAuth={
- google:async()=>{try{authStatus.textContent='Abriendo Google…';await signInWithPopup(auth,googleProvider)}catch(e){authStatus.textContent='No se pudo iniciar sesión';error(e)}},
+ google:async()=>{try{authStatus.textContent='Abriendo Google…';syncStatus.textContent='Esperando respuesta de Google…';const result=await signInWithPopup(auth,googleProvider);if(result.user){user=result.user;document.getElementById('loginCard').classList.add('hidden');document.getElementById('profileArea').classList.remove('hidden');authStatus.textContent='Sesión iniciada';syncStatus.textContent='☁️ Conectando tu perfil…';}}catch(e){authStatus.textContent='No se pudo iniciar sesión';error(e)}},
  login:async()=>{try{const [email,password]=credentials();await signInWithEmailAndPassword(auth,email,password)}catch(e){error(e)}},
  register:async()=>{try{const [email,password]=credentials();await createUserWithEmailAndPassword(auth,email,password)}catch(e){error(e)}},
  logout:async()=>{try{await signOut(auth)}catch(e){error(e)}}
@@ -18,7 +18,7 @@ window.ritmoCloud={
  saveSession:async session=>{if(!user)return;try{await addDoc(collection(db,'users',user.uid,'sessions'),session);syncStatus.textContent='☁️ Sesión guardada'}catch(e){error(e)}}
 };
 onAuthStateChanged(auth,async u=>{
- user=u;fields.classList.toggle('hidden',!!u);document.getElementById('profileArea').classList.toggle('hidden',!u);out.classList.toggle('hidden',!u);if(!u){document.getElementById('profilesView').classList.remove('hidden');document.getElementById('home').classList.add('hidden');document.getElementById('workout').classList.add('hidden')}
+ user=u;document.getElementById('loginCard').classList.toggle('hidden',!!u);fields.classList.toggle('hidden',!!u);document.getElementById('profileArea').classList.toggle('hidden',!u);out.classList.toggle('hidden',!u);if(!u){document.getElementById('loginCard').classList.remove('hidden');document.getElementById('profilesView').classList.remove('hidden');document.getElementById('home').classList.add('hidden');document.getElementById('workout').classList.add('hidden')}
  authStatus.textContent=u?'Sesión iniciada: '+u.email:'Inicia sesión para guardar tus datos en la nube';
  syncStatus.textContent=u?'☁️ Cargando perfiles…':'📱 Sin sesión: los datos solo están en este dispositivo';
  if(!u)return;

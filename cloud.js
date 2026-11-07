@@ -18,7 +18,7 @@ window.ritmoCloud={
  saveSession:async session=>{if(!user)return;try{await addDoc(collection(db,'users',user.uid,'sessions'),session);syncStatus.textContent='☁️ Sesión guardada'}catch(e){error(e)}}
 };
 onAuthStateChanged(auth,async u=>{
- user=u;fields.classList.toggle('hidden',!!u);out.classList.toggle('hidden',!u);
+ user=u;fields.classList.toggle('hidden',!!u);document.getElementById('profileArea').classList.toggle('hidden',!u);out.classList.toggle('hidden',!u);
  authStatus.textContent=u?'Sesión iniciada: '+u.email:'Inicia sesión para guardar tus datos en la nube';
  syncStatus.textContent=u?'☁️ Cargando perfiles…':'📱 Sin sesión: los datos solo están en este dispositivo';
  if(!u)return;

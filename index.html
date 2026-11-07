@@ -115,7 +115,8 @@ function demoFrame(t){
 }
 function startDemo(x){stopDemo();demoPoseKey='';if(rest||finished){$('figure').innerHTML='<div style="font-size:55px">💗</div>';return}demoFrame(performance.now());demoTicker=setInterval(()=>demoFrame(performance.now()),90)}
 function stopDemo(){if(demoTicker)clearInterval(demoTicker);demoTicker=null}
-\nfunction duration(s){return s[1]}
+
+function duration(s){return s[1]}
 function setProfile(p){pause();profile=p;schedule=p==='kids'?kidsSchedule:adultSchedule;$('adultTab').className='btn '+(p==='adult'?'':'secondary');$('kidsTab').className='btn '+(p==='kids'?'':'secondary');$('home').querySelector('h1').innerHTML=p==='kids'?'¡A moverse y divertirse! 🌈':'Un día más cerca<br>de tu mejor versión.';$('planIntro').textContent=p==='kids'?'Rutinas infantiles suaves y divertidas.':'28 ejercicios adaptados a pared y bloques de yoga. Lunes, martes, jueves y viernes en casa; sábado telas con supervisión.';drawDays()}
 function dayExercises(i){if(profile==='kids')return kidsSamples;const k=schedule[i][3];return k==='class'?[library.inversion[6]]:library[k]}
 function drawDays(){$('days').innerHTML=schedule.map((d,i)=>'<button class="day" onclick="openDay('+i+')"><div class="num">'+d[2]+'</div><div><strong>'+d[0]+' · '+d[1]+'</strong><small>'+(d[3]==='class'?'Solo con profesora · 1 habilidad':dayExercises(i).length+' ejercicios · '+(profile==='kids'?'movimiento infantil':'rutina guiada'))+'</small></div><div class="arrow">›</div></button>').join('');let n=Number(localStorage.getItem('ritmoDone_'+(activeProfileId||profile))||0);$('stats').textContent=n?n+' sesión(es) completada(s). ¡Sigue así! 🎉':'Aún no has completado sesiones.'}

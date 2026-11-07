@@ -1,0 +1,16 @@
+{
+  "name": "Ritmo · Mi entrenamiento",
+  "short_name": "Ritmo",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#130f1c",
+  "theme_color": "#21152f",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

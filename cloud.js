@@ -1,13 +1,14 @@
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,GoogleAuthProvider,signInWithRedirect,getRedirectResult,signOut} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {getFirestore,doc,getDoc,setDoc,collection,addDoc} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import {firebaseConfig} from './firebase-config.js';
 const authStatus=document.getElementById('authStatus'),syncStatus=document.getElementById('syncStatus'),fields=document.getElementById('authFields'),out=document.getElementById('signOutButton');
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);const googleProvider=new GoogleAuthProvider();getRedirectResult(auth).catch(e=>{syncStatus.textContent='⚠️ '+(e.code||e.message)});
 let user=null;
 const credentials=()=>[document.getElementById('authEmail').value.trim(),document.getElementById('authPassword').value];
 const error=e=>{syncStatus.textContent='⚠️ '+(e.code||e.message)+' · Comprueba Authentication y Firestore en Firebase.'};
 window.ritmoAuth={
+ google:async()=>{try{await signInWithRedirect(auth,googleProvider)}catch(e){error(e)}},
  login:async()=>{try{const [email,password]=credentials();await signInWithEmailAndPassword(auth,email,password)}catch(e){error(e)}},
  register:async()=>{try{const [email,password]=credentials();await createUserWithEmailAndPassword(auth,email,password)}catch(e){error(e)}},
  logout:async()=>{try{await signOut(auth)}catch(e){error(e)}}

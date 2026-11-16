@@ -1,11 +1,18 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
+  function owner(uid) { return request.auth != null && request.auth.uid == uid; }
   match /users/{uid} {
-   allow read, create, update, delete: if request.auth != null && request.auth.uid == uid;
+   allow read, create, update, delete: if owner(uid);
    match /sessions/{sessionId} {
-    allow read, create: if request.auth != null && request.auth.uid == uid;
+    allow read, create: if owner(uid);
     allow update, delete: if false;
+   }
+   match /figures/{figureId} {
+    allow read, create, update, delete: if owner(uid);
+    match /attempts/{attemptId} {
+     allow read, create, update, delete: if owner(uid);
+    }
    }
   }
  }

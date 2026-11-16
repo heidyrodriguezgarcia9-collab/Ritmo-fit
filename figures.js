@@ -7,13 +7,13 @@ async function uploadFigurePhoto(file,figureId,kind){if(!file||!file.size)return
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const statuses=['Pendiente','En progreso','Lograda','Dominada'];
-const starterFigures=[{key:'escorpion',name:'Escorpión'},{key:'split-invertido',name:'Split invertido en suspensión'},{key:'estrella-arqueada',name:'Estrella invertida con arqueo'}];
+const starterFigures=[{key:'escorpion',name:'Escorpión',photo:'./fotos/escorpion.jpg'},{key:'split-invertido',name:'Split invertido en suspensión',photo:'./fotos/split-invertido.jpg'},{key:'estrella-arqueada',name:'Estrella invertida con arqueo',photo:'./fotos/estrella-invertida.jpg'}];
 let uid=null,profileId=null,figures=[],selected=null,filter='',statusFilter='Todos';
 const collectionPath=()=>collection(db,'users',uid,'figures');
 const statusOptions=v=>statuses.map(s=>'<option '+(v===s?'selected':'')+'>'+s+'</option>').join('');
 const safeImage=url=>{if(typeof url==='string'&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(url)&&url.length<850000)return url;try{let u=new URL(url);return ['https:','http:'].includes(u.protocol)?u.href:''}catch{return ''}};
 async function photoData(file){if(!file)return null;if(!file.type.startsWith('image/'))throw Error('Selecciona una imagen');const bitmap=await createImageBitmap(file);const scale=Math.min(1,650/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();const result=canvas.toDataURL('image/jpeg',0.55);if(result.length>600000)throw Error('La imagen es demasiado grande');return result;}
-const cover=f=>safeImage(f.referencePhoto);
+const cover=f=>safeImage(f.referencePhoto)||starterFigures.find(x=>x.key===f.starterKey)?.photo||'';
 const ownPhoto=f=>safeImage(f.achievementPhoto);
 function render(){
  const root=$('figureLibrary');if(!root)return;

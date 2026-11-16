@@ -1,4 +1,4 @@
-import {FIGURE_CATALOG} from './figure-catalog.js';
+import {FIGURE_CATALOG} from './figure-catalog.js?v=20261116-10';
 import {getApps} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {getFirestore,collection,addDoc,getDocs,doc,updateDoc} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';

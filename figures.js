@@ -46,7 +46,24 @@ async function openFigure(id){
  $('ownPhotoInput').onchange=e=>savePhoto('achievementPhoto',e.target.files[0]);
  root.querySelectorAll('[data-remove-photo]').forEach(btn=>btn.onclick=async()=>{const field=btn.dataset.removePhoto;if(!confirm('¿Eliminar esta foto?'))return;btn.disabled=true;try{await updateDoc(doc(db,'users',uid,'figures',id),{[field]:'',updatedAt:new Date().toISOString()});await load();openFigure(id)}catch(e){alert('No se pudo eliminar: '+e.message);btn.disabled=false}});
  const el=$('figAttempts');
- try{const snap=await getDocs(collection(db,'users',uid,'figures',id,'attempts'));const attempts=snap.docs.map(d=>d.data()).sort((a,b)=>(b.createdAt||b.date||'').localeCompare(a.createdAt||a.date||''));el.innerHTML=attempts.length?'<div class="timeline">'+attempts.map((t,i)=>'<div class="timeline-item"><span class="timeline-date">'+esc((t.date||t.createdAt||'').slice(0,10))+'</span><p>'+esc(t.notes||'Sin anotaciones')+'</p></div>').join('')+'</div>':'<p class="muted">Todavía no hay avances. Tu historia empieza aquí.</p>'}catch(e){el.textContent='No se pudo cargar el historial: '+e.message}
+ try{
+  const snap=await getDocs(collection(db,'users',uid,'figures',id,'attempts'));
+  const attempts=snap.docs.map(d=>({id:d.id,...d.data()})).filter(t=>!t.deletedAt).sort((a,b)=>(b.createdAt||b.date||'').localeCompare(a.createdAt||a.date||''));
+  el.innerHTML=attempts.length?'<div class="timeline">'+attempts.map(t=>'<div class="timeline-item" data-attempt-id="'+esc(t.id)+'"><span class="timeline-date">'+esc((t.date||t.createdAt||'').slice(0,10))+'</span><p class="attempt-note">'+esc(t.notes||'Sin anotaciones')+'</p><div class="attempt-actions"><button type="button" data-action="edit">Editar</button><button type="button" data-action="delete">Eliminar</button></div></div>').join('')+'</div>':'<p class="muted">Todavía no hay avances. Tu historia empieza aquí.</p>';
+  el.querySelectorAll('.timeline-item').forEach(item=>{
+   const entry=attempts.find(t=>t.id===item.dataset.attemptId);
+   item.querySelector('[data-action="edit"]').onclick=()=>{
+    if(item.querySelector('textarea'))return;
+    const field=document.createElement('textarea');field.className='attempt-edit';field.rows=3;field.value=entry.notes||'';
+    const save=document.createElement('button');save.type='button';save.textContent='Guardar nota';
+    const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancelar';
+    const actions=item.querySelector('.attempt-actions');item.querySelector('.attempt-note').replaceWith(field);actions.replaceChildren(save,cancel);
+    cancel.onclick=()=>openFigure(id);
+    save.onclick=async()=>{const notes=field.value.trim();if(!notes){alert('Escribe una nota antes de guardar.');return}if(!confirm('¿Estás segura de guardar los cambios de esta nota?'))return;save.disabled=true;try{await updateDoc(doc(db,'users',uid,'figures',id,'attempts',entry.id),{notes,updatedAt:new Date().toISOString()});openFigure(id)}catch(err){alert('No se pudo editar la nota: '+err.message);save.disabled=false}};
+   };
+   item.querySelector('[data-action="delete"]').onclick=async()=>{if(!confirm('¿Estás segura de eliminar esta nota?'))return;const btn=item.querySelector('[data-action="delete"]');btn.disabled=true;try{await updateDoc(doc(db,'users',uid,'figures',id,'attempts',entry.id),{deletedAt:new Date().toISOString()});openFigure(id)}catch(err){alert('No se pudo eliminar la nota: '+err.message);btn.disabled=false}};
+  });
+ }catch(e){el.textContent='No se pudo cargar el historial: '+e.message}
  $('achievementForm').onsubmit=async e=>{e.preventDefault();const form=e.target,button=form.querySelector('button[type="submit"]');const now=new Date(),done=['Lograda','Dominada'].includes(form.elements.status.value),note=form.elements.progressNote.value.trim();const d={status:form.elements.status.value,updatedAt:now.toISOString()};if(done){d.finalNote=form.elements.finalNote.value;if(!f.achievedAt)d.achievedAt=now.toISOString().slice(0,10)}button.disabled=true;try{if(!done&&note){await addDoc(collection(db,'users',uid,'figures',id,'attempts'),{notes:note,date:now.toISOString().slice(0,10),createdAt:now.toISOString()});d.firstAttemptDate=f.firstAttemptDate||now.toISOString().slice(0,10);if(d.status==='Pendiente')d.status='En progreso'}await updateDoc(doc(db,'users',uid,'figures',id),d);await load();openFigure(id)}catch(err){alert('Error al guardar: '+err.message);button.disabled=false}};
 }
 window.ritmoFigures={open:async()=>{const id=window.ritmoActiveProfileId;if(id!==profileId){profileId=id;closeDetail();await load()}else {closeDetail();render()}},reset:()=>{profileId=null;figures=[];selected=null}};

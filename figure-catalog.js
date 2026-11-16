@@ -1,4 +1,4 @@
-// Figuras seleccionadas por la usuaria. Fotos de referencia pendientes de validar y licenciar.
+// Figuras seleccionadas por la usuaria. Fotografías de terceros: enlazar fuente, no reproducir sin permiso.
 export const FIGURE_CATALOG = [
   {
     "id": "escorpion",
@@ -7,7 +7,8 @@ export const FIGURE_CATALOG = [
     "difficulty": "Por definir",
     "photo": "",
     "verified": false,
-    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso"
+    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso",
+    "source": "https://flyingskullaerial.com/"
   },
   {
     "id": "split-horizontal",
@@ -25,7 +26,8 @@ export const FIGURE_CATALOG = [
     "difficulty": "Por definir",
     "photo": "",
     "verified": false,
-    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso"
+    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso",
+    "source": "https://www.aerialfitonline.com/silks/rebecca-split-scorpion/"
   },
   {
     "id": "mariposa-buda",
@@ -43,7 +45,8 @@ export const FIGURE_CATALOG = [
     "difficulty": "Por definir",
     "photo": "",
     "verified": false,
-    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso"
+    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso",
+    "source": "https://www.aerialphysique.com/post/technique-tip-music-box"
   },
   {
     "id": "cartwheel-star",
@@ -52,7 +55,8 @@ export const FIGURE_CATALOG = [
     "difficulty": "Por definir",
     "photo": "",
     "verified": false,
-    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso"
+    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso",
+    "source": "https://www.aerialphysique.com/post/technique-tip-cartwheel-star"
   },
   {
     "id": "inverted-gazelle",
@@ -79,7 +83,8 @@ export const FIGURE_CATALOG = [
     "difficulty": "Por definir",
     "photo": "",
     "verified": false,
-    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso"
+    "photoStatus": "Pendiente: fotografía de pose final y autorización de uso",
+    "source": "https://www.aerialfitonline.com/silks/mermaid/"
   },
   {
     "id": "aerial-arabesque",

@@ -13,13 +13,24 @@ const safeImage=url=>{try{let u=new URL(url);return ['https:','http:'].includes(
 const cover=f=>safeImage(FIGURE_CATALOG.find(x=>x.id===f.catalogId)?.photo)||safeImage(f.referencePhoto);
 function render(){
  const root=$('figureLibrary');if(!root)return;
- const shown=figures.filter(f=>(f.name||'').toLocaleLowerCase().includes(filter.toLocaleLowerCase())&&(statusFilter==='Todos'||f.status===statusFilter));
- root.innerHTML='<div class="fig-toolbar"><input id="figureSearch" placeholder="🔎 Buscar figura por nombre" aria-label="Buscar figura" value="'+esc(filter)+'"><select id="figureStatusFilter" aria-label="Filtrar por estado"><option>Todos</option>'+statusOptions(statusFilter)+'</select></div><div class="fig-count">'+figures.length+' figuras en tu libro</div><div class="fig-grid">'+shown.map(f=>'<button class="fig-tile" data-id="'+esc(f.id)+'">'+(cover(f)?'<img src="'+esc(cover(f))+'" alt="'+esc(f.name)+'">':'<div class="fig-placeholder">✦</div>')+'<div class="fig-tile-body"><strong>'+esc(f.name)+'</strong><small>'+esc(f.category||'Sin categoría')+' · '+esc(f.status||'Pendiente')+'</small></div></button>').join('')+'</div>'+(shown.length?'':'<p class="book-empty">Todavía no tienes figuras guardadas.</p>')+'<div class="book-page"><h3>Explora figuras para tu libro</h3><p class="muted">Selecciona una figura para comenzar su seguimiento. El catálogo es compartido y lo mantiene la aplicación. Solo posiciones finales elevadas con foto de referencia; sin ejercicios de piso ni pasos intermedios.</p><div class="fig-grid">'+FIGURE_CATALOG.filter(f=>f.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())&&(statusFilter==='Todos'||statusFilter==='Pendiente')&&!figures.some(saved=>saved.catalogId===f.id)).map(f=>'<button class="fig-tile catalog-tile" data-catalog="'+esc(f.id)+'"><img loading="lazy" src="'+esc(f.photo)+'" alt="Fotografía ilustrativa de telas aéreas" onerror="this.style.display=\'none\'"><div class="fig-tile-body"><strong>'+esc(f.name)+'</strong><small>'+esc(f.category)+' · Abrir figura</small></div></button>').join('')+'</div></div>';
+ const items=FIGURE_CATALOG.map(item=>({...item,progress:figures.find(f=>f.catalogId===item.id)}))
+  .filter(item=>item.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase()))
+  .filter(item=>statusFilter==='Todos'||(item.progress?.status||'Pendiente')===statusFilter);
+ const tile=item=>'<button class="fig-tile catalog-tile" data-catalog="'+esc(item.id)+'">'+
+   (safeImage(item.photo)?'<img loading="lazy" src="'+esc(safeImage(item.photo))+'" alt="Posición final: '+esc(item.name)+'" onerror="this.replaceWith(Object.assign(document.createElement(\'div\'),{className:\'fig-placeholder\',textContent:\'Imagen no disponible\'}))">':'<div class="fig-placeholder">Imagen pendiente</div>')+
+   '<div class="fig-tile-body"><strong>'+esc(item.name)+'</strong><small>'+esc(item.category)+' · '+esc(item.progress?.status||'Pendiente')+'</small></div></button>';
+ root.innerHTML='<div class="book-page"><h3>Galería de figuras aéreas</h3><p class="muted">Solo posiciones finales en telas. Toca una figura para llevar tu diario de intentos.</p><div class="fig-toolbar"><input id="figureSearch" placeholder="🔎 Buscar figura" aria-label="Buscar figura" value="'+esc(filter)+'"><select id="figureStatusFilter" aria-label="Filtrar por estado"><option>Todos</option>'+statusOptions(statusFilter)+'</select></div><div class="fig-count">'+items.length+' figuras · '+figures.filter(f=>f.catalogId).length+' en seguimiento</div><div class="fig-grid">'+items.map(tile).join('')+'</div>'+(items.length?'':'<p class="book-empty">No encontramos figuras con ese filtro.</p>')+'</div>';
  $('figureSearch').oninput=e=>{filter=e.target.value;render();$('figureSearch').focus();$('figureSearch').setSelectionRange(filter.length,filter.length)};
+ $('figureStatusFilter').value=statusFilter;
  $('figureStatusFilter').onchange=e=>{statusFilter=e.target.value;render()};
-
- root.querySelectorAll('.fig-tile:not(.catalog-tile)').forEach(b=>b.onclick=()=>openFigure(b.dataset.id));
- root.querySelectorAll('.catalog-tile').forEach(b=>b.onclick=async()=>{const item=FIGURE_CATALOG.find(f=>f.id===b.dataset.catalog);if(!item)return;const existing=figures.find(f=>f.catalogId===item.id);if(existing){openFigure(existing.id);return}try{await addDoc(collectionPath(),{profileId,name:item.name,category:item.category,difficulty:item.difficulty,referencePhoto:item.photo,catalogId:item.id,status:'Pendiente',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});await load()}catch(e){alert('Firebase no permite guardar todavía. Debes publicar las reglas firestore.rules en Firebase Console. Detalle: '+e.message)}});
+ root.querySelectorAll('.catalog-tile').forEach(b=>b.onclick=async()=>{
+  const item=FIGURE_CATALOG.find(f=>f.id===b.dataset.catalog);if(!item)return;
+  const existing=figures.find(f=>f.catalogId===item.id);if(existing){openFigure(existing.id);return}
+  try{
+   const ref=await addDoc(collectionPath(),{profileId,name:item.name,category:item.category,difficulty:item.difficulty,referencePhoto:item.photo,catalogId:item.id,status:'Pendiente',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
+   await load();openFigure(ref.id);
+  }catch(e){alert('No se pudo abrir el seguimiento de esta figura: '+e.message)}
+ });
 }
 function showMessage(m){const el=$('figureMessage');if(el)el.textContent=m}
 async function load(){if(!uid||!profileId)return;showMessage('Cargando figuras…');try{const snap=await getDocs(collectionPath());figures=snap.docs.map(d=>({id:d.id,...d.data()})).filter(f=>f.profileId===profileId).sort((a,b)=>(a.name||'').localeCompare(b.name||''));showMessage('');render()}catch(e){figures=[];showMessage('El catálogo está disponible. Para guardar avances hay que publicar las reglas de Firestore.');render()}}
